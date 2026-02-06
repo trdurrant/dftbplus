@@ -469,11 +469,16 @@ contains
     type(TParserFlags) :: parserFlags
     type(TInputData) :: inpData
 
+    print*, "Call to this%checkInit"
     call this%checkInit()
 
+    print*, "Call to parseHsdTree"
     call parseHsdTree(input%hsdTree, inpData, parserFlags)
+    print*, "Call to doPostParseJobs"
     call doPostParseJobs(input%hsdTree, parserFlags)
+    print*, "Call to this%main%initProgramVariables"
     call this%main%initProgramVariables(inpData, this%env)
+    print*, "Call to TDftbPlus_setupCalculator compleate"
 
   end subroutine TDftbPlus_setupCalculator
 
