@@ -167,26 +167,34 @@ contains
     integer :: iErr
 
     !! Write header
+    print*, "Call to printDftbHeader"
     call printDftbHeader('(MODES '// version //')', releaseYear)
 
     !! Read in input file as HSD
+    print*, "Call to parseHSD"
     call parseHSD(rootTag, hsdInput, hsdTree)
+    print*, "Call to getChild"
     call getChild(hsdTree, rootTag, root)
 
     write(stdout, "(A)") "Interpreting input file '" // hsdInput // "'"
     write(stdout, "(A)") repeat("-", 80)
 
     !! Check if input version is the one, which we can handle
+    print*, "getChildValue"
     call getChildValue(root, "InputVersion", inputVersion, parserVersion)
     if (inputVersion /= parserVersion) then
       call error("Version of input (" // i2c(inputVersion) // ") and parser ("&
           & // i2c(parserVersion) // ") do not match")
     end if
 
+    print*, "getChild"
     call getChild(root, "Geometry", tmp)
+    print*, "readGeometry"
     call readGeometry(tmp, geo)
 
+    print*, "getChildValue"
     call getChildValue(root, "RemoveTranslation", tRemoveTranslate, .false.)
+    print*, "getChildValue"
     call getChildValue(root, "RemoveRotation", tRemoveRotate, .false.)
 
     call getChildValue(root, "Atoms", buffer2, "1:-1", child=child, multiple=.true.)
@@ -230,6 +238,7 @@ contains
     end select
 
     ! Slater-Koster files
+    print*, "getParamSearchPaths"
     call getParamSearchPaths(searchPath)
     strJoin = joinPathsPrettyErr(searchPath)
     allocate(speciesMass(geo%nSpecies))
@@ -305,6 +314,7 @@ contains
       end do
     end if
 
+    print*, "getInputMasses"
     call getInputMasses(root, geo, replacementMasses)
     allocate(atomicMasses(nMovedAtom))
     do iAt = 1, nMovedAtom
@@ -388,6 +398,7 @@ contains
     tEigenVectors = tPlotModes .or. allocated(bornMatrix) .or. allocated(bornDerivsMatrix)
 
     !! Issue warning about unprocessed nodes
+    print*, "warnUnprocessedNodes"
     call warnUnprocessedNodes(root, .true.)
 
     !! Finish parsing, dump parsed and processed input
