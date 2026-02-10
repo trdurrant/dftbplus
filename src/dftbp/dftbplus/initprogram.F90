@@ -1343,11 +1343,15 @@ contains
     integer :: nKPrime
   #:endif
 
+    print*, "In call to initProgramVariables"
+
     @:ASSERT(input%tInitialized)
     write(stdOut, "(/, A)") "Starting initialization..."
     write(stdOut, "(A80)") repeat("-", 80)
 
+    print*, "> env%initGlobalTimer"
     call env%initGlobalTimer(input%ctrl%timingLevel, "DFTB+ running times", stdOut)
+    print*, "> env%globalTimer%startTimer"
     call env%globalTimer%startTimer(globalTimers%globalInit)
 
     ! Set the same access for readwrite as for write (we do not open any files in readwrite mode)
