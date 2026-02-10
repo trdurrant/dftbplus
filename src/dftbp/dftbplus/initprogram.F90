@@ -1564,6 +1564,7 @@ contains
   #:endif
   print*, "ioProc decided"
 
+  print*, "before scalapack"
   #:if WITH_SCALAPACK
     call initBlacs(input%ctrl%parallelOpts%blacsOpts, this%nAtom, this%nOrb, this%t2Component, env,&
         & errStatus)
@@ -1574,6 +1575,8 @@ contains
       call error(errStatus%message)
     end if
   #:endif
+  print*, "after scalapack"
+  print*, "TParallelKS_init"
     call TParallelKS_init(this%parallelKS, env, this%nKPoint, this%nIndepSpin)
 
     this%sccTol = input%ctrl%sccTol
@@ -1696,6 +1699,7 @@ contains
       call TUniqueHubbard_init(this%uniqHubbU, hubbU, this%orb)
     end if
 
+    print*, "> initReferencePopulation_"
     call initReferencePopulation_(input, this%orb, this%hamiltonianType, this%referenceN0)
 
     this%atomOrderMatters = this%atomOrderMatters .or. allocated(input%ctrl%customOccAtoms)
@@ -1852,6 +1856,7 @@ contains
       end where
     end if
 
+    print*, "branch this%tPeriodic"
     if (this%tPeriodic) then
       ! Make some guess for the nr. of all interacting atoms
       this%nAllAtom = int((real(this%nAtom, dp)**(1.0_dp/3.0_dp) + 3.0_dp)**3)
@@ -1959,6 +1964,7 @@ contains
     end if
     this%isExtField = allocated(this%eField)
 
+    print*, "branch allocated(input%ctrl%electricField)"
     if (allocated(input%ctrl%electricField)) then
       allocate(this%eField%EFieldStrength)
       this%eField%EFieldStrength = input%ctrl%electricField%EFieldStrength
@@ -1995,6 +2001,7 @@ contains
     end if
 
     ! DFTB related variables if multiple determinants are used
+    print*, "> TDftbDeterminants_init"
     call TDftbDeterminants_init(this%deltaDftb, input%ctrl%isNonAufbau, input%ctrl%isSpinPurify,&
         & input%ctrl%isGroundGuess, this%nEl, this%dftbEnergy)
 
@@ -2105,6 +2112,7 @@ contains
       allocate(this%indDerivAtom(0))
     end if
 
+    print*, "branch (allocated(input%ctrl%geoOpt))"
     if (allocated(input%ctrl%geoOpt)) then
       if (this%tHelical) then
         call error("GeometryOptimisation driver currently does not support helical geometries")
@@ -2705,6 +2713,7 @@ contains
 
 
     ! MD stuff
+    print*, "branch this%tMD"
     if (this%tMD) then
       ! Create MD framework.
       allocate(this%pMDFrame)
@@ -2937,6 +2946,7 @@ contains
 
     end if
 
+    print*, "this%isHybridXc"
     if (this%isHybridXc) then
       call THybridXcFunc_init(this%hybridXc, this%nAtom, this%species0, hubbU(1, :),&
           & input%ctrl%hybridXcInp%screeningThreshold, input%ctrl%hybridXcInp%omega,&
@@ -3231,6 +3241,7 @@ contains
       end do
     end if
 
+  print*, "MPI marco"
   #:if WITH_MPI
     if (env%mpi%nGroup > 1) then
       write(stdOut, "('MPI processes: ',T30,I0,' (split into ',I0,' groups)')")&
@@ -3240,10 +3251,12 @@ contains
     end if
   #:endif
 
+  print*, "OMP marco"
   #:if WITH_OMP
     write(stdOut, "('OpenMP threads: ', T30, I0)") omp_get_max_threads()
   #:endif
 
+  print*, "OMP+MPI macro"
   #:if WITH_MPI and WITH_OMP
     if (omp_get_max_threads() > 1 .and. .not. input%ctrl%parallelOpts%tOmpThreads) then
       write(stdOut, *)
@@ -3254,6 +3267,7 @@ contains
     end if
   #:endif
 
+  print*, "Scalapack macro"
   #:if WITH_SCALAPACK
     if (.not. (this%isHybridXc .and. this%tRealHS .and. this%tPeriodic)) then
       write(stdOut, "('BLACS orbital grid size:', T30, I0, ' x ', I0)")env%blacs%orbitalGrid%nRow,&
@@ -3269,6 +3283,7 @@ contains
       write(stdOut, "(A,':',T30,I0)") "Specified random seed", iSeed
     end if
 
+    print*, "> checkStackSize"
     call checkStackSize(env)
 
     if (input%ctrl%tMD) then
@@ -3572,6 +3587,7 @@ contains
       deallocate(shellNamesTmp)
     end do
 
+    print*, "branch this%tMulliken"
     if (this%tMulliken) then
       if (allocated(input%ctrl%customOccAtoms)) then
         call printCustomReferenceOccupations(this%orb, input%geom%species, &
@@ -3579,6 +3595,7 @@ contains
       end if
     end if
 
+    print*, "branch this%tPeriodic"
     if (this%tPeriodic) then
       do ii = 1, this%nKPoint
         if (ii == 1) then
@@ -3602,6 +3619,7 @@ contains
       write(stdout, *)
     end if
 
+    print*, "this%tHelical"
     if (this%tHelical) then
       do ii = 1, this%nKPoint
         if (ii == 1) then
@@ -3614,6 +3632,7 @@ contains
       end do
     end if
 
+    print*, "branch allocated(this%dispersion)"
     if (allocated(this%dispersion)) then
       select type (o=>this%dispersion)
       type is (TDispSlaKirk)
@@ -3635,6 +3654,7 @@ contains
       end select
     end if
 
+    print*, "branch allocated(this%solvation)"
     if (allocated(this%solvation)) then
       call writeSolvationInfo(stdOut, this%solvation)
       if (this%eFieldScaling%isRescaled) then
@@ -3644,6 +3664,7 @@ contains
       end if
     end if
 
+    print*, "branch this%tSccCalc"
     if (this%tSccCalc) then
       ! Have the SK values of U been replaced?
       if (allocated(input%ctrl%hubbU)) then
@@ -3669,6 +3690,7 @@ contains
     end if
 
     tFirst = .true.
+    print*, "branch this%tSpin .or. allocated(this%reks)"
     if (this%tSpin .or. allocated(this%reks)) then
       do iSp = 1, this%nType
         do jj = 1, this%orb%nShell(iSp)
@@ -3695,6 +3717,7 @@ contains
     end if
 
     tFirst = .true.
+    print*, "branch this%tSpinOrbit"
     if (this%tSpinOrbit) then
       if (this%tDualSpinOrbit) then
         write(stdOut, "(A)")"Dual representation spin orbit"
@@ -3716,6 +3739,7 @@ contains
       end do
     end if
 
+    print*, "branch this%tSccCalc"
     if (this%tSccCalc) then
       if (this%t3rdFull) then
         write(stdOut, "(A,T30,A)") "Full 3rd order correction", "Yes"
@@ -3747,6 +3771,7 @@ contains
       end if
     end if
 
+    print*, "branch this%isHybridXc"
     if (this%isHybridXc) then
       if (input%ctrl%hybridXcInp%hybridXcType == hybridXcFunc%hyb) then
         write(stdOut, "(A,':',T30,A)") "Global hybrid", "Yes"
@@ -3831,6 +3856,7 @@ contains
       write(stdOut, "(T30,A)") "External charges specified"
     end if
 
+    print*, "branch this%isExtField"
     if (this%isExtField) then
 
       if (allocated(this%eField%EFieldStrength)) then
@@ -3867,6 +3893,7 @@ contains
 
     end if
 
+    print*, "branch allocated(this%dftbU)"
     if (allocated(this%dftbU)) then
       do iSp = 1, this%nType
         if (this%dftbU%nUJ(iSp)>0) then
@@ -3882,6 +3909,7 @@ contains
     end if
 
     tFirst = .true.
+    print*, "branch allocated(this%onSiteElements)"
     if (allocated(this%onSiteElements)) then
       do iSp = 1, this%nType
         do iSpin = 1, 2
@@ -3909,6 +3937,7 @@ contains
       end do
     end if
 
+    print*, "Branch allocated(this%apiCallBack"
     if (allocated(this%apiCallBack)) then
       if (this%apiCallBack%canAsiChangeTheModel()) then
         if (allocated(this%scc)) then
@@ -4147,6 +4176,7 @@ contains
       call printReksInitInfo(this%reks, this%orb, this%speciesName, this%nType)
     end if
 
+    print*, "> env%globalTimer%stopTimer"
     call env%globalTimer%stopTimer(globalTimers%globalInit)
 
   end subroutine initProgramVariables
