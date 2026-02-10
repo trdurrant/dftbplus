@@ -1556,11 +1556,13 @@ contains
     end if
   #:endif
 
+  print*, "deciding ioProc"
   #:if WITH_MPI
     isIoProc = env%mpi%tGlobalLead
   #:else
     isIoProc = .true.
   #:endif
+  print*, "ioProc decided"
 
   #:if WITH_SCALAPACK
     call initBlacs(input%ctrl%parallelOpts%blacsOpts, this%nAtom, this%nOrb, this%t2Component, env,&
