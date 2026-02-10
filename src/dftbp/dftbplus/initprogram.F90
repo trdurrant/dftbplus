@@ -1355,6 +1355,7 @@ contains
     call env%globalTimer%startTimer(globalTimers%globalInit)
 
     ! Set the same access for readwrite as for write (we do not open any files in readwrite mode)
+    print*, "> setDefaultBinaryAccess"
     call setDefaultBinaryAccess(input%ctrl%binaryAccessTypes(1), input%ctrl%binaryAccessTypes(2),&
         & input%ctrl%binaryAccessTypes(2))
 
@@ -1363,6 +1364,7 @@ contains
     this%tSccCalc = input%ctrl%tScc
     if (allocated(input%ctrl%dftbUInp)) then
       allocate(this%dftbU)
+      print*, "> TDftbU_init"
       call TDftbU_init(this%dftbU, input%ctrl%dftbUInp)
     end if
     this%tSpin = input%ctrl%tSpin
@@ -1379,6 +1381,7 @@ contains
     this%nIndepSpin = this%nSpin
 
   #:if WITH_API
+    print*, "WITH_API macro"
     if (input%ctrl%isASICallbackEnabled) then
       allocate(this%apiCallBack)
     end if
@@ -1411,10 +1414,13 @@ contains
       call error("Colinear spin polarization required for shared Ef over spin channels")
     end if
 
+    print*, "Call to initMpi"
   #:if WITH_MPI
     call env%initMpi(input%ctrl%parallelOpts%nGroup)
   #:endif
+    print*, "Call to initMpi return"
 
+    print*, "> initGeometry_"
     call initGeometry_(env, input, this%nAtom, this%nType, this%tPeriodic, this%tHelical,&
         & this%boundaryCond, this%coord0, this%species0, this%tCoordsChanged, this%tLatticeChanged,&
         & this%latVec, this%origin, this%recVec, this%invLatVec, this%cellVol, this%recCellVol,&
