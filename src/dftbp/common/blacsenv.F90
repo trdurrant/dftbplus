@@ -79,6 +79,7 @@ contains
     character(200) :: buffer
 
     ! Create orbital grid for each processor group
+    print*, "> getSquareGridParams"
     call getSquareGridParams(myMpiEnv%groupSize, nProcRow, nProcCol)
     ! Check whether all processes have some portions of the H and S matrices otherwise
     ! diagonalisers may return garbage
@@ -89,11 +90,15 @@ contains
           & ") too big (> ", maxProcRow, " x ", maxProcColMax, ")"
       @:RAISE_ERROR(errStatus, -1, trim(buffer))
     end if
+    print*, '> getGridMap'
     call getGridMap(myMpiEnv%groupMembersWorld, nProcRow, nProcCol, gridMap)
+    print*, '> this%orbitalGrid%initmappedgrids'
     call this%orbitalGrid%initmappedgrids(gridMap)
 
     ! rectangular grid for the rowBlock
+    print*, '> getGridMap'
     call getGridMap(myMpiEnv%groupMembersWorld, 1, nProcRow * nProcCol, gridMap)
+    print*, '> this%rowOrbitalGrid%initmappedgrids'
     call this%rowOrbitalGrid%initmappedgrids(gridMap)
 
     ! Create atom grid for each processor group
@@ -102,7 +107,9 @@ contains
     nProcRow = min(nProcRow, maxProcRow)
     nProcCol = min(nProcCol, maxProcColMax)
 
+    print*, '> getGridMap'
     call getGridMap(myMpiEnv%groupMembersWorld, nProcRow, nProcCol, gridMap)
+    print*, '> this%atomGrid%initmappedgrids'
     call this%atomGrid%initmappedgrids(gridMap)
 
     this%rowBlockSize = rowBlock
